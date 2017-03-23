@@ -24,8 +24,8 @@ setup(
     url = "http://packages.python.org/an_example_pypi_project",
     packages=['tvdoon'],
     #install_requires=requirements,
-    install_requires= ['tvdb_api','PTable'],
-    setup_requires= ['tvdb_api','PTable'],
+    install_requires= ['tvdb_api','PTable','prettytable'],
+    setup_requires= ['tvdb_api','PTable','prettytable'],
     scripts=['tvdoon/tvdoon'],
     classifiers=[
         "Development Status :: 3 - Alpha",
