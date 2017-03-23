@@ -8,6 +8,11 @@ from setuptools import setup
 #def read(fname):
  #   return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+# requirements = [         
+#                     'tvdb_api',
+#                     'PTable',
+#                 ]
+
 setup(
     name = "tvdoon",
     version = "0.1",
@@ -18,6 +23,7 @@ setup(
     keywords = "tvShow, upcoming tvshow",
     url = "http://packages.python.org/an_example_pypi_project",
     packages=['tvdoon'],
+    #install_requires=requirements,
     install_requires= ['tvdb_api','PTable'],
     setup_requires= ['tvdb_api','PTable'],
     scripts=['tvdoon/tvdoon'],

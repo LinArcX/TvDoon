@@ -13,8 +13,9 @@
 # =======================================================================
 
 # Import the modules needed to run the script.
-import sys, os, pwd, tvdb_api
+import sys, os, pwd
 from prettytable import PrettyTable
+import tvdb_api
 
 # Main definition - constants
 menu_actions = {}
