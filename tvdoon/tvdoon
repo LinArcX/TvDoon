@@ -16,6 +16,10 @@
 import sys, os, pwd
 from prettytable import PrettyTable
 import tvdb_api
+from pyfiglet import figlet_format
+
+#from util.pillow import showPixArt
+#import pyfiglet # termcolor, colorama
 
 # Main definition - constants
 menu_actions = {}
@@ -43,6 +47,7 @@ def main_menu():
 
     os.system('clear')
     userName = pwd.getpwuid(os.getuid()).pw_name
+    print(color.BOLD + figlet_format('TvDo0n',font='starwars') + color.END)
     print("Welcome " + userName + ", Please Choose The Items:")
     print("s. Search Tv Series")
     print("w. whoAmI")
