@@ -86,6 +86,7 @@ def searchTvSeries(serailName=None):
         x.field_names = [i, "seriesname"]
         x.add_row([i, item['seriesname']])
     print(x)
+    print(color.CYAN + "for see more details, enter 'row Number' and hit ENTER." + color.END)
     print("b. Back")
     print("q. Quit")
     selectTvShow(items)
