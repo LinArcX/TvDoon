@@ -5,11 +5,12 @@ Show Information About Tv Show's, Ratings And So Many Cool Fatures! **tvdO0n**
 !["tvdoon"](http://uupload.ir/files/s1ia_screenshot_from_2017-03-24_13-42-08.png "tvdoon")
 
 ## Installation
-1. it reside in AUR just type: packer -S tvdoon-git
+1. if you are an arch user,it reside in AUR repo.just type: `packer -S tvdoon-git`
 
 ## Usage
-type in your terminal( :) ):
-  tvdoon
+1. type in your terminal:
+  `tvdoon`
+2. have Fun!
 
 ## Contributing
 1. Fork it!
