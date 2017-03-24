@@ -51,7 +51,8 @@ def main_menu():
     print("Welcome " + userName + ", Please Choose The Items:")
     print("s. Search Tv Series")
     print("w. whoAmI")
-    print("c. Clear")
+    print("h. help")
+    print("c. Clear Screen")
     print("\nq. Quit")
     choice = input(" >>  ")
     exec_menu(choice)
@@ -86,7 +87,7 @@ def searchTvSeries(serailName=None):
         x.field_names = [i, "seriesname"]
         x.add_row([i, item['seriesname']])
     print(x)
-    print(color.CYAN + "for see more details, enter 'row Number' and hit ENTER." + color.END)
+    print(color.CYAN + "for see more details, enter 'row Number' and hit ENTER.otherwise use below Capabilities." + color.END)
     print("b. Back")
     print("q. Quit")
     selectTvShow(items)
@@ -170,6 +171,15 @@ def whoAmI():
     exec_menu(choice)
     return
 
+def help():
+    print("this program use english letters for get into other menu(sub-menu).\nfor example, if you see: 'b. Back', you must enter b letter, "+
+          "and hit enter from keyboard.")
+    print("b. Back")
+    print("q. Quit")
+    choice = input(" >>  ")
+    exec_menu(choice)
+    return
+
 def clear():
     os.system('clear')
     print("b. Back")
@@ -193,6 +203,7 @@ menu_actions = {
     'main_menu': main_menu,
     's': searchTvSeries,
     'w': whoAmI,
+    'h': help,
     'a': actors,
     't': selectTvShow,
     'o': OverView,
