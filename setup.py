@@ -10,7 +10,7 @@ setup(
     license = "GPL3",
     keywords = "tvShow, upcoming tvshow",
     url = "http://packages.python.org/an_example_pypi_project",
-    packages=['tvdoon','util'],
+    packages=['tvdoon'],
     install_requires= ['tvdb_api','prettytable', 'pyfiglet '],
     setup_requires= ['tvdb_api', 'prettytable', 'pyfiglet '],
     scripts=['tvdoon/tvdoon'],
