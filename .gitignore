@@ -29,3 +29,5 @@
 !tvdoon/
 tvdoon/_tvdoon.py
 util/
+tvdoon.egg-info/
+dist/
