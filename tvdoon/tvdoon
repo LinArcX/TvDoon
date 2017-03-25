@@ -205,21 +205,21 @@ def switchCreator(s=None,w=None,h=None,c=None,q=None,o=None,a=None,b=None,pItems
     flag = 0
     while flag == 0:
         mainChoice = input(" >>  ")
-        if mainChoice == 's' and s is not None:
+        if mainChoice == 's' and s != "":
             searchTvSeries()
-        elif mainChoice == 'w' and w is not None:
+        elif mainChoice == 'w' and w != "":
             whoAmI()
-        elif mainChoice == 'h' and h is not None:
+        elif mainChoice == 'h' and h != "":
             help()
-        elif mainChoice == 'c' and c is not None:
+        elif mainChoice == 'c' and c != "":
             clear()
-        elif mainChoice == 'q' and q is not None:
+        elif mainChoice == 'q' and q != "":
             quit()
-        elif mainChoice == 'o' and o is not None:
+        elif mainChoice == 'o' and o != "":
             OverView(pItems)
-        elif mainChoice == 'a' and a is not None:
+        elif mainChoice == 'a' and a != "":
             actors(pItems)
-        elif mainChoice == 'b' and b is not None:
+        elif mainChoice == 'b' and b != "":
             if pFunction == "main_menu":
                 result = main_menu()
                 return result
