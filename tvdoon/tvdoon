@@ -147,7 +147,7 @@ def selectTvShow(pItems):
     print("a. actors")
     print("b. Back")
     print("q. Quit")
-    switchCreator('', '', '', '', '','o','a','b',items,"searchTvSeries")
+    switchCreator('s', '', '', '', '','o','a','b',items,"searchTvSeries")
     return
 
 def OverView(pItems):
@@ -157,7 +157,7 @@ def OverView(pItems):
     print(color.RED + str([(t[dict['seriesname']]['overview'])]) + color.END)
     print("b. Back")
     print("q. Quit")
-    switchCreator('', '', '', '', 'q', '', '', 'b', items, "selectTvShow")
+    switchCreator('s', '', '', '', 'q', '', 'a', 'b', items, "selectTvShow")
     return
 
 def actors(pItems):
@@ -171,7 +171,7 @@ def actors(pItems):
     print(x)
     print("b. Back")
     print("q. Quit")
-    switchCreator('', '', '', '', 'q', '', '', 'b', items, "selectTvShow")
+    switchCreator('s', '', '', '', 'q', 'o', '', 'b', items, "selectTvShow")
     return
 
 
