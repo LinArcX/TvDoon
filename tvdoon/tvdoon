@@ -21,6 +21,7 @@ import json
 import re
 import requests
 from collections import namedtuple
+from os.path import expanduser
 from prettytable import PrettyTable
 from pyfiglet import figlet_format
 import tvdb_api
@@ -34,6 +35,9 @@ showUrlByPage = ' http://api.tvmaze.com/shows?page='
 
 # init tvdb_api
 t = tvdb_api.Tvdb(banners=True)
+
+# Global Section Variables
+PATH = expanduser("~") + "/.config/tvdoon/"
 
 # =======================
 #     MENUS FUNCTIONS
@@ -56,16 +60,32 @@ class color:
 
 def main_menu():
     os.system('clear')
+    checkConfExist()
     username = pwd.getpwuid(os.getuid()).pw_name
     print(color.BOLD + figlet_format('TvDo0n', font='starwars') + color.END)
     print("Welcome " + username + ", Please Choose The Items:")
     print("s. Search Tv Series")
-    print("w. whoAmI")
+    print("m. My Favourites")
+    print("w. Who Am I?")
     # print("x. truct")
-    print("h. help")
+    print("h. Help")
     print("c. Clear Screen")
     print("\nq. Quit")
-    switchCreator("swhcq","","")
+    switchCreator("smwhcq","","")
+    return
+
+
+def checkConfExist():
+    # create conf directory
+    if not os.path.exists(PATH):
+        os.makedirs(PATH)
+
+    # create favourite.conf file
+    try:
+        favFile = open(PATH + "favourites.conf", "r")
+    except (OSError, IOError) as e:
+        open(PATH + "favourites.conf", "a").close()
+
     return
 
 
@@ -94,14 +114,21 @@ def searchTvSeries(pItems=None):
         elif mainChoice == 'q':
             quit()
         elif re.match('\d',mainChoice):
-            selectTvShow(items)
+            try:
+                items = t.search(x._rows[int(mainChoice)][1])
+                selectTvShow(items)
+            except IndexError:
+                print("You Entered Wrong Number.Please Try Again Later.")
         else:
             print("Invalid selection, please try again.\n")
     return
 
 
 def selectTvShow(pItems):
+    originalParams = "soabqfd"
+    finalParams = ""
     choice = ""
+    favExists = False
     items = pItems
     try:
         if pItems is None:
@@ -109,31 +136,48 @@ def selectTvShow(pItems):
             dict = pItems[int(choice)]
         else:
             dict = pItems[0]
-        x = PrettyTable()
-        # x.add_column(item['seriesname'], [1295, 5905, 112, 1357, 2058, 1566, 5386])
-        x.add_column("No.", [choice])
-        x.add_column("seriesname", [(t[dict['seriesname']]['seriesname'])])
-        x.add_column("rating", [(t[dict['seriesname']]['rating'])])
-        x.add_column("ratingcount", [(t[dict['seriesname']]['ratingcount'])])
-        x.add_column("genre", [(t[dict['seriesname']]['genre'])])
-        x.add_column("airs_dayofweek", [(t[dict['seriesname']]['airs_dayofweek'])])
-        x.add_column("firstaired",[(t[dict['seriesname']]['firstaired'])])
-        x.add_column("finale_aired", [(t[dict['seriesname']]['finale_aired'])])
-        x.add_column("network", [(t[dict['seriesname']]['network'])])
-        x.add_column("runtime", [(t[dict['seriesname']]['runtime'])])
-        x.add_column("status", [(t[dict['seriesname']]['status'])])
-        print(x)
+            x = PrettyTable()
+            # x.add_column(item['seriesname'], [1295, 5905, 112, 1357, 2058, 1566, 5386])
+            x.add_column("No.", [choice])
+            x.add_column("seriesname", [(t[dict['seriesname']]['seriesname'])])
+            x.add_column("rating", [(t[dict['seriesname']]['rating'])])
+            x.add_column("ratingcount", [(t[dict['seriesname']]['ratingcount'])])
+            x.add_column("genre", [(t[dict['seriesname']]['genre'])])
+            x.add_column("airs_dayofweek", [(t[dict['seriesname']]['airs_dayofweek'])])
+            x.add_column("firstaired",[(t[dict['seriesname']]['firstaired'])])
+            try:
+                x.add_column("finale_aired", [(t[dict['seriesname']]['finale_aired'])])
+            except Exception as e:
+                x.add_column("finale_aired", ["---"])
+            x.add_column("network", [(t[dict['seriesname']]['network'])])
+            x.add_column("runtime", [(t[dict['seriesname']]['runtime'])])
+            x.add_column("status", [(t[dict['seriesname']]['status'])])
+            print(x)
     except ValueError:
         main_menu()
     except IndexError:
         print("Oops! You Enter Incorrect Number.Please Select Another Series Again: ")
         selectTvShow(items)
+
+    favFile = open(PATH + "favourites.conf", "r")
+    for line in favFile:
+        if line == pItems[0]['seriesname'] + "\n":
+            favExists = True
+    favFile.close()
+    if favExists:
+        print(color.BOLD + color.CYAN + "This Is your Favourite Serie." + color.END)
+        print("d. Delete From Favourites")
+        finalParams = originalParams.replace("f", "")
+    else:
+        print("f. Favourite This!")
+        finalParams = originalParams.replace("d", "")
+    favFile.close()
     print("s. Search Another Tv Show")
     print("o. OverView")
-    print("a. actors")
+    print("a. Actors")
     print("b. Back")
     print("q. Quit")
-    switchCreator("bqaso", items, "searchTvSeries")
+    switchCreator(finalParams, items, "searchTvSeries")
     return
 
 def OverView(pItems):
@@ -157,6 +201,76 @@ def actors(pItems):
     print("b. Back")
     print("q. Quit")
     switchCreator("qbos", pItems, "selectTvShow")
+    return
+
+def myFavourites():
+    flag = 0
+    x = PrettyTable()
+    favFile = open(PATH + "favourites.conf", "r")
+    if os.path.getsize(PATH + "favourites.conf") > 0:
+        for i, line in enumerate(favFile):
+            x.field_names = [i, "seriesname"]
+            x.add_row([i, line])
+        print(x)
+        print("b. Back")
+        print("q. Quit")
+        favFile.close()
+        while flag == 0:
+            mainChoice = input(" >>  ")
+            if mainChoice == 'b':
+                main_menu()
+            elif mainChoice == 'q':
+                quit()
+            elif re.match("\d", mainChoice):
+                try:
+                    items = t.search(x._rows[int(mainChoice)][1])
+                    selectTvShow(items)
+                except IndexError as e:
+                    print("You Entered Wrong Number.Please Try Again Later.")
+            else:
+                print("Invalid selection, please try again.\n")
+    else:
+        favFile.close()
+        print(color.RED + "there is no favourite tv show in the list!" + color.END)
+        print("b. Back")
+        print("q. Quit")
+        switchCreator("qb", "", "main_menu")
+    return
+
+
+def deleteFavourites(pItems):
+    dict = pItems[0]
+
+    f = open(PATH + "favourites.conf", "r")
+    rLines = f.readlines()
+    f.close()
+
+    f = open(PATH + "favourites.conf", "w")
+
+    for line in rLines:
+        if line != dict['seriesname'] + "\n":
+            f.write(line)
+
+    f.close()
+    print(color.CYAN + "'" + dict['seriesname'] + "'" + " was Successfully removed from your favourite list" + color.END)
+    print("b. Back")
+    print("q. Quit")
+    switchCreator("qbos", pItems, "selectTvShow")
+    return
+
+
+def favouriteThis(pItems):
+    dict = pItems[0]
+    favFile = open(PATH + "favourites.conf", "a")
+    favFile.write( dict['seriesname']+ "\n")
+    favFile.close()
+    print(color.GREEN + "'" + dict['seriesname'] + "'" + " Successfully Added to Your Favourite List." +color.END )
+    print("b. Back")
+    print("q. Quit")
+    switchCreator("qbos", pItems, "selectTvShow")
+    # data = {}
+    # data['key'] = 'value'
+    # json_data = json.dumps(data)
     return
 
 
@@ -198,6 +312,12 @@ def switchCreator(*args):
         mainChoice = input(" >>  ")
         if mainChoice == 's' and 's' in args[0]:
             searchTvSeries()
+        if mainChoice == 'm' and 'm' in args[0]:
+            myFavourites()
+        if mainChoice == 'f' and 'f' in args[0]:
+            favouriteThis(args[1])
+        if mainChoice == 'd' and 'd' in args[0]:
+            deleteFavourites(args[1])
         elif mainChoice == 'w' and 'w' in args[0]:
             whoAmI()
         elif mainChoice == 'h' and 'h' in args[0]:
@@ -258,11 +378,14 @@ menu_actions = {
     's': searchTvSeries,
     'w': whoAmI,
     'h': help,
-    'a': actors,
+    'c': clear,
     't': selectTvShow,
     'o': OverView,
+    'a': actors,
+    'm': myFavourites,
+    'f': favouriteThis,
+    'd': deleteFavourites,
     # 'x': truct,
-    'c': clear,
     'q': quit,
 }
 
