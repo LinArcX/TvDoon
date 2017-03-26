@@ -39,6 +39,7 @@ t = tvdb_api.Tvdb(banners=True)
 #     MENUS FUNCTIONS
 # =======================
 
+
 class color:
     PURPLE = '\033[95m'
     CYAN = '\033[96m'
@@ -52,6 +53,7 @@ class color:
     ITALIC = '\e[3m'
     END = '\033[0m'
 
+
 def main_menu():
     os.system('clear')
     username = pwd.getpwuid(os.getuid()).pw_name
@@ -63,23 +65,7 @@ def main_menu():
     print("h. help")
     print("c. Clear Screen")
     print("\nq. Quit")
-    switchCreator('s','w','h','c','q','','','','','')
-    return
-
-
-def exec_menu(choice, pItems=None):
-    ch = choice.lower()
-    if ch == '':
-        menu_actions['main_menu']()
-    else:
-        try:
-            if pItems is None:
-                menu_actions[ch]()
-            else:
-                menu_actions[ch](pItems)
-        except KeyError:
-            print("Invalid selection, please try again.\n")
-            menu_actions['main_menu']()
+    switchCreator("swhcq","","")
     return
 
 
@@ -147,7 +133,7 @@ def selectTvShow(pItems):
     print("a. actors")
     print("b. Back")
     print("q. Quit")
-    switchCreator('s', '', '', '', '','o','a','b',items,"searchTvSeries")
+    switchCreator("bqaso", items, "searchTvSeries")
     return
 
 def OverView(pItems):
@@ -157,11 +143,10 @@ def OverView(pItems):
     print(color.RED + str([(t[dict['seriesname']]['overview'])]) + color.END)
     print("b. Back")
     print("q. Quit")
-    switchCreator('s', '', '', '', 'q', '', 'a', 'b', items, "selectTvShow")
+    switchCreator("bqas", items, "selectTvShow")
     return
 
 def actors(pItems):
-    items = pItems
     dict = pItems[0]
     x = PrettyTable()
     splitActors = str([(t[dict['seriesname']]['actors'])]).split("|")
@@ -171,16 +156,15 @@ def actors(pItems):
     print(x)
     print("b. Back")
     print("q. Quit")
-    switchCreator('s', '', '', '', 'q', 'o', '', 'b', items, "selectTvShow")
+    switchCreator("qbos", pItems, "selectTvShow")
     return
 
 
 def whoAmI():
-    flag = 0
     print("i am nobody, please visit us on : http://www.bbs.archusers.ir!\n")
     print("b. Back")
     print("q. Quit")
-    switchCreator('', '', '', '', 'q', '', '', 'b', '', "main_menu")
+    switchCreator("qb", "", "main_menu")
     return
 
 def help():
@@ -188,48 +172,54 @@ def help():
           "and hit enter from keyboard.")
     print("b. Back")
     print("q. Quit")
-    switchCreator('', '', '', '', 'q', '', '', 'b', '', "main_menu")
+    switchCreator("qb", "", "main_menu")
     return
 
 def clear():
     os.system('clear')
     print("b. Back")
     print("q. Quit")
-    switchCreator('', '', '', '', 'q', '', '', 'b', '', "main_menu")
+    switchCreator("qb", "", "main_menu")
     return
 
 def quit():
     sys.exit()
 
-def switchCreator(s=None,w=None,h=None,c=None,q=None,o=None,a=None,b=None,pItems=None,pFunction=None):
+
+def switchCreator(*args):
+
+    """call the appropriate function, according to arguments pass it.
+
+    :param args: args[0] =menu actions, args[1] =function parameters, args[2] =function name
+    :return:
+    """
     flag = 0
     while flag == 0:
         mainChoice = input(" >>  ")
-        if mainChoice == 's' and s != "":
+        if mainChoice == 's' and 's' in args[0]:
             searchTvSeries()
-        elif mainChoice == 'w' and w != "":
+        elif mainChoice == 'w' and 'w' in args[0]:
             whoAmI()
-        elif mainChoice == 'h' and h != "":
+        elif mainChoice == 'h' and 'h' in args[0]:
             help()
-        elif mainChoice == 'c' and c != "":
+        elif mainChoice == 'c' and 'c' in args[0]:
             clear()
-        elif mainChoice == 'q' and q != "":
+        elif mainChoice == 'q' and 'q' in args[0]:
             quit()
-        elif mainChoice == 'o' and o != "":
-            OverView(pItems)
-        elif mainChoice == 'a' and a != "":
-            actors(pItems)
-        elif mainChoice == 'b' and b != "":
-            if pFunction == "main_menu":
+        elif mainChoice == 'o' and 'o' in args[0]:
+            OverView(args[1])
+        elif mainChoice == 'a' and 'a' in args[0]:
+            actors(args[1])
+        elif mainChoice == 'b' and 'b' in args[0]:
+            if args[2] == "main_menu":
                 result = main_menu()
                 return result
-            elif pFunction == "searchTvSeries":
-                searchTvSeries(pItems)
-            elif pFunction == "selectTvShow":
-                selectTvShow(pItems)
+            elif args[2] == "searchTvSeries":
+                searchTvSeries(args[1])
+            elif args[2] == "selectTvShow":
+                selectTvShow(args[1])
         else:
             print("Invalid selection, please try again.\n")
-
 
 
 def functionCaller(methodToRun):
@@ -273,7 +263,6 @@ menu_actions = {
     'o': OverView,
     # 'x': truct,
     'c': clear,
-    # 'b': back,
     'q': quit,
 }
 
