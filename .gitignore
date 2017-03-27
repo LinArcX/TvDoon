@@ -28,6 +28,8 @@
 
 !tvdoon/
 tvdoon/_tvdoon.py
+tvdoon/__tvdoon.py
 util/
 tvdoon.egg-info/
 dist/
+pytvmaze/
