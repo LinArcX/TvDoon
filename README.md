@@ -7,8 +7,8 @@ Show Information About Tv Show's, Ratings And So Many Cool Fatures! **tvdO0n**
 ## Installation
 1. if you are an arch user,it reside in AUR repo.just type: 
     `packer -S tvdoon-git`
-2. if you have windows, mac, ubuntu, suse, fedora or any other linux distro; make sure that python and pip have been installed on your machine.then:
-    `sudo pip install tvdoon`
+2. if you have windows, mac, ubuntu, suse, fedora or any other linux distro; make sure that python and pip3 have been installed on your machine.then:
+    `sudo pip3 install tvdoon`
 
 ## Usage
 1. type in your terminal:
