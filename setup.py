@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="tvdoon",
-    version="0.1.0",
+    version="1.1.0",
     author="LinArcX",
     author_email="linarcx@gmail.com",
     description="Show Information About Tv Show's, Ratings And So Many Cool Features!",
@@ -11,8 +11,8 @@ setup(
     url="https://github.com/LinArcX/tvdoon",
     download_url='https://github.com/LinArcX/tvdoon/archive/0.1.0.tar.gz',
     packages=['tvdoon'],
-    install_requires= ['tvdb_api','prettytable', 'pyfiglet', 'requests-cache'],
-    setup_requires = ['tvdb_api', 'prettytable', 'pyfiglet', 'requests-cache'],
+    install_requires= ['pytvmaze','prettytable', 'pyfiglet'],
+    setup_requires = ['pytvmaze', 'prettytable', 'pyfiglet'],
     scripts=['tvdoon/tvdoon'],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",

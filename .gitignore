@@ -31,3 +31,4 @@ tvdoon/_tvdoon.py
 tvdoon/__tvdoon
 tvdoon.egg-info/
 dist/
+utility/__pycache__/
