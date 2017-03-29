@@ -9,7 +9,7 @@ setup(
     license=" GPLv3",
     keywords="tvShow, upcoming tvShow",
     url="https://github.com/LinArcX/tvdoon",
-    download_url='https://github.com/LinArcX/tvdoon/archive/1.1.0.zip',
+    download_url='https://github.com/LinArcX/tvdoon/archive/1.1.0.tar.gz',
     packages=['tvdoon','utility'],
     install_requires= ['pytvmaze','prettytable', 'pyfiglet'],
     setup_requires = ['pytvmaze', 'prettytable', 'pyfiglet'],
