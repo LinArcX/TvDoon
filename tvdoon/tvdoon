@@ -51,18 +51,21 @@ def main_menu():
 def searchTvSeries(pItems=None):
     items = ""
     flag = 0
-    if pItems is None:
-        os.system('clear')
-        itemShow = input("Enter Tv Show Name:")
-        items=pytvmaze.show_search(itemShow)
-    else:
-        items = pItems
-    x = PrettyTable()
-    for i, item in enumerate(items):
-        x.field_names = [i, "seriesname"]
-        x.add_row([i, item.name])
-    print(x)
-    print(generalUtil.color.CYAN + "for see more details, enter 'row Number' and hit ENTER.otherwise use below Capabilities." + generalUtil.color.END)
+    try:
+        if pItems is None:
+            os.system('clear')
+            itemShow = input("Enter Tv Show Name:")
+            items=pytvmaze.show_search(itemShow)
+        else:
+            items = pItems
+        x = PrettyTable()
+        for i, item in enumerate(items):
+            x.field_names = [i, "seriesname"]
+            x.add_row([i, item.name])
+        print(x)
+        print(generalUtil.color.CYAN + "for see more details, enter 'row Number' and hit ENTER.otherwise use below Capabilities." + generalUtil.color.END)
+    except Exception:
+        print("There Is No Matching Tv Show")
     print("b. Back")
     print("q. Quit")
     while flag == 0:
@@ -99,20 +102,20 @@ def selectTvShow(pItems, tvdbID=None):
         favExists = False
         try:
             x = PrettyTable()
-            x.add_column("No.", [tvdbID])
-            x.add_column("seriesname", [tvItem.name])
-            x.add_column("rating", [tvItem.rating['average']])
+            x.add_column("ID.", [tvdbID])
+            x.add_column("Name", [tvItem.name])
+            x.add_column("Rating", [tvItem.rating['average']])
             for item in tvItem.genres:
                 finalGenres += str(item) + " | "
-            x.add_column("genres", [finalGenres.rsplit('|',1)[0]])
-            x.add_column("network", [tvItem.network.name])
-            x.add_column("runtime", [tvItem.runtime])
-            x.add_column("status", [tvItem.status])
-            x.add_column("premiered", [tvItem.premiered])
-            x.add_column("final_aired", [tvItem.previous_episode.airdate])
-            x.add_column("last session/episode", [str(tvItem.previous_episode.season_number) + "/" + str(tvItem.previous_episode.episode_number)])
+            x.add_column("Genres", [finalGenres.rsplit('|',1)[0]])
+            x.add_column("Network", [tvItem.network.name])
+            x.add_column("RunTime", [tvItem.runtime])
+            x.add_column("Status", [tvItem.status])
+            x.add_column("Premiered", [tvItem.premiered])
+            x.add_column("Final Aired", [tvItem.previous_episode.airdate])
+            x.add_column("Last ses/ep", [str(tvItem.previous_episode.season_number) + "/" + str(tvItem.previous_episode.episode_number)])
             if tvItem is not None:
-                x.add_column("next Episode",[nextReleaseDate])
+                x.add_column("Next Episode",[nextReleaseDate])
                 x.add_column("days to next...",[deltaDate])
             print(x)
         except ValueError:
@@ -136,6 +139,7 @@ def selectTvShow(pItems, tvdbID=None):
         print("s. Search Another Tv Show")
         print("o. OverView")
         print("a. Actors")
+        print("e. Episodes")
     except:
         print("there is no enough Information")
         print("s. Search Another Tv Show")
@@ -174,8 +178,6 @@ def actors(pItems, tvdbID):
 
 def favouriteThis(pItems, tvdbID):
     tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
-    # pytvmaze.lookup_tvdb(line.split("-")[1])
-    # tvItem = pItems[int(mainChoice)]
     favFile = open(fileUtil.PATH + "favourites.conf", "a")
     favFile.write(tvItem.name + "-" + str(tvdbID) + "\n")
     favFile.close()
@@ -187,7 +189,6 @@ def favouriteThis(pItems, tvdbID):
 
 
 def deleteFavourites(pItems, tvdbID):
-    # tvItem = ""
     tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
 
     # open File in ReadOnly-Mode

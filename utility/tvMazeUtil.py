@@ -12,8 +12,8 @@ def tvMazeCreator(items, mainChoice, tvName=None):
 def tvMazeDate(tvMaze):
     currentDate = datetime.strptime(datetime.now().strftime('%Y-%m-%d'), '%Y-%m-%d')
     try:
-        nextReleaseDate = datetime.strptime(tvMaze.next_episode.airdate, '%Y-%m-%d')
-        deltaDate = (nextReleaseDate - currentDate).days
+        nextReleaseDate = datetime.strptime(tvMaze.next_episode.airdate, '%Y-%m-%d').date()
+        deltaDate = (nextReleaseDate - currentDate.date()).days
     except:
         nextReleaseDate = "---"
         deltaDate = "---"
