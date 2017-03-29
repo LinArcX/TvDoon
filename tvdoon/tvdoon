@@ -39,7 +39,7 @@ def main_menu():
     print("Welcome " + username + ", Please Choose The Items:")
     print("s. Search Tv Series")
     print("m. My Favourites")
-    print("u. Up-Coming Tv Show's")
+    # print("u. Up-Coming Tv Show's")
     print("w. Who Am I?")
     print("h. Help")
     print("c. Clear Screen")
@@ -296,8 +296,8 @@ def switchCreator(*args):
             favouriteThis(args[1], args[3])
         elif mainChoice == 'd' and 'd' in args[0]:
             deleteFavourites(args[1], args[3])
-        elif mainChoice == 'u' and 'u' in args[0]:
-            upcoming()
+        # elif mainChoice == 'u' and 'u' in args[0]:
+        #     upcoming()
         elif mainChoice == 'w' and 'w' in args[0]:
             whoAmI()
         elif mainChoice == 'h' and 'h' in args[0]:
