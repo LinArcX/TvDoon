@@ -4,7 +4,7 @@
 # description       :This program displays Information About Tv Series
 # author            :LinArcX
 # date              :03/21/2017
-# version           :0.1
+# version           :1.2.0
 # mail              :linarcx@gmail.com
 # web               :stack.blog.ir
 # notes             :
@@ -17,75 +17,34 @@
 import sys
 import os
 import pwd
-import json
 import re
-import requests
-from collections import namedtuple
-from os.path import expanduser
+import pytvmaze
+
+from utility import tvMazeUtil
+from utility import fileUtil
+from utility import generalUtil
+
 from prettytable import PrettyTable
 from pyfiglet import figlet_format
-import tvdb_api
-
-# Url definition
-searchUrl = "http://api.tvmaze.com/search/shows?q="
-peopleUrl = 'http://api.tvmaze.com/search/people?q='
-upComingUrl = 'http://api.tvmaze.com/schedule?date='
-showUrl = 'http://api.tvmaze.com/shows'
-showUrlByPage = ' http://api.tvmaze.com/shows?page='
-
-# init tvdb_api
-t = tvdb_api.Tvdb(banners=True)
-
-# Global Section Variables
-PATH = expanduser("~") + "/.config/tvdoon/"
 
 # =======================
 #     MENUS FUNCTIONS
 # =======================
 
-
-class color:
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    ITALIC = '\e[3m'
-    END = '\033[0m'
-
-
 def main_menu():
     os.system('clear')
-    checkConfExist()
+    fileUtil.checkConfExist()
     username = pwd.getpwuid(os.getuid()).pw_name
-    print(color.BOLD + figlet_format('TvDo0n', font='starwars') + color.END)
+    print(generalUtil.color.BOLD + figlet_format('TvDo0n', font='starwars') + generalUtil.color.END)
     print("Welcome " + username + ", Please Choose The Items:")
     print("s. Search Tv Series")
     print("m. My Favourites")
+    print("u. Up-Coming Tv Show's")
     print("w. Who Am I?")
-    # print("x. truct")
     print("h. Help")
     print("c. Clear Screen")
     print("\nq. Quit")
-    switchCreator("smwhcq","","")
-    return
-
-
-def checkConfExist():
-    # create conf directory
-    if not os.path.exists(PATH):
-        os.makedirs(PATH)
-
-    # create favourite.conf file
-    try:
-        favFile = open(PATH + "favourites.conf", "r")
-    except (OSError, IOError) as e:
-        open(PATH + "favourites.conf", "a").close()
-
+    switchCreator("smuwhcq","","")
     return
 
 
@@ -94,17 +53,16 @@ def searchTvSeries(pItems=None):
     flag = 0
     if pItems is None:
         os.system('clear')
-        tVar = input("Enter Tv Show Name:")
-        items = t.search(tVar)
-        count = len(items)
+        itemShow = input("Enter Tv Show Name:")
+        items=pytvmaze.show_search(itemShow)
     else:
         items = pItems
     x = PrettyTable()
     for i, item in enumerate(items):
         x.field_names = [i, "seriesname"]
-        x.add_row([i, item['seriesname']])
+        x.add_row([i, item.name])
     print(x)
-    print(color.CYAN + "for see more details, enter 'row Number' and hit ENTER.otherwise use below Capabilities." + color.END)
+    print(generalUtil.color.CYAN + "for see more details, enter 'row Number' and hit ENTER.otherwise use below Capabilities." + generalUtil.color.END)
     print("b. Back")
     print("q. Quit")
     while flag == 0:
@@ -115,102 +73,156 @@ def searchTvSeries(pItems=None):
             quit()
         elif re.match('\d',mainChoice):
             try:
-                items = t.search(x._rows[int(mainChoice)][1])
-                selectTvShow(items)
-            except IndexError:
+                if int(mainChoice)<=len(items) and int(mainChoice)>=0:
+                    selectTvShow(items, items[int(mainChoice)].externals['thetvdb'])
+                else:
+                    print("You Entered Wrong Number.Please Try Again Later.")
+            except IndexError as e:
                 print("You Entered Wrong Number.Please Try Again Later.")
         else:
             print("Invalid selection, please try again.\n")
     return
 
 
-def selectTvShow(pItems):
+def selectTvShow(pItems, tvdbID=None):
     originalParams = "soabqfd"
     finalParams = ""
-    choice = ""
-    favExists = False
-    items = pItems
     try:
-        if pItems is None:
-            choice = input(" >>  ")
-            dict = pItems[int(choice)]
+        tvItem = ""
+        if tvdbID is not None:
+            tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
         else:
-            dict = pItems[0]
+            tvItem = pItems
+            tvdbID = tvItem.externals['thetvdb']
+        deltaDate, nextReleaseDate = tvMazeUtil.tvMazeDate(tvItem)
+        finalGenres = ""
+        favExists = False
+        try:
             x = PrettyTable()
-            # x.add_column(item['seriesname'], [1295, 5905, 112, 1357, 2058, 1566, 5386])
-            x.add_column("No.", [choice])
-            x.add_column("seriesname", [(t[dict['seriesname']]['seriesname'])])
-            x.add_column("rating", [(t[dict['seriesname']]['rating'])])
-            x.add_column("ratingcount", [(t[dict['seriesname']]['ratingcount'])])
-            x.add_column("genre", [(t[dict['seriesname']]['genre'])])
-            x.add_column("airs_dayofweek", [(t[dict['seriesname']]['airs_dayofweek'])])
-            x.add_column("firstaired",[(t[dict['seriesname']]['firstaired'])])
-            try:
-                x.add_column("finale_aired", [(t[dict['seriesname']]['finale_aired'])])
-            except Exception as e:
-                x.add_column("finale_aired", ["---"])
-            x.add_column("network", [(t[dict['seriesname']]['network'])])
-            x.add_column("runtime", [(t[dict['seriesname']]['runtime'])])
-            x.add_column("status", [(t[dict['seriesname']]['status'])])
+            x.add_column("No.", [tvdbID])
+            x.add_column("seriesname", [tvItem.name])
+            x.add_column("rating", [tvItem.rating['average']])
+            for item in tvItem.genres:
+                finalGenres += str(item) + " | "
+            x.add_column("genres", [finalGenres.rsplit('|',1)[0]])
+            x.add_column("network", [tvItem.network.name])
+            x.add_column("runtime", [tvItem.runtime])
+            x.add_column("status", [tvItem.status])
+            x.add_column("premiered", [tvItem.premiered])
+            x.add_column("final_aired", [tvItem.previous_episode.airdate])
+            x.add_column("last session/episode", [str(tvItem.previous_episode.season_number) + "/" + str(tvItem.previous_episode.episode_number)])
+            if tvItem is not None:
+                x.add_column("next Episode",[nextReleaseDate])
+                x.add_column("days to next...",[deltaDate])
             print(x)
-    except ValueError:
-        main_menu()
-    except IndexError:
-        print("Oops! You Enter Incorrect Number.Please Select Another Series Again: ")
-        selectTvShow(items)
-
-    favFile = open(PATH + "favourites.conf", "r")
-    for line in favFile:
-        if line == pItems[0]['seriesname'] + "\n":
-            favExists = True
-    favFile.close()
-    if favExists:
-        print(color.BOLD + color.CYAN + "This Is your Favourite Serie." + color.END)
-        print("d. Delete From Favourites")
-        finalParams = originalParams.replace("f", "")
-    else:
-        print("f. Favourite This!")
-        finalParams = originalParams.replace("d", "")
-    favFile.close()
-    print("s. Search Another Tv Show")
-    print("o. OverView")
-    print("a. Actors")
+        except ValueError:
+            main_menu()
+        except IndexError:
+            print("Oops! You Enter Incorrect Number.Please Select Another Series Again: ")
+            selectTvShow(pItems, tvdbID)
+        favFile = open(fileUtil.PATH + "favourites.conf", "r")
+        for line in favFile:
+            if tvItem.name in line:
+                favExists = True
+        favFile.close()
+        if favExists:
+            print(generalUtil.color.BOLD + generalUtil.color.CYAN + "This Is your Favourite Serie." + generalUtil.color.END)
+            print("d. Delete From Favourites")
+            finalParams = originalParams.replace("f", "")
+        else:
+            print("f. Favourite This!")
+            finalParams = originalParams.replace("d", "")
+        favFile.close()
+        print("s. Search Another Tv Show")
+        print("o. OverView")
+        print("a. Actors")
+    except:
+        print("there is no enough Information")
+        print("s. Search Another Tv Show")
+        finalParams = originalParams.replace("o", "")
+        finalParams = finalParams.replace("a", "")
+        finalParams = finalParams.replace("f", "")
+        finalParams = finalParams.replace("d", "")
     print("b. Back")
     print("q. Quit")
-    switchCreator(finalParams, items, "searchTvSeries")
+    switchCreator(finalParams, pItems, "searchTvSeries", tvdbID)
     return
 
-def OverView(pItems):
-    items = pItems
-    dict = pItems[0]
+
+def OverView(pItems, tvdbID):
+    tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
     print("overview: \n")
-    print(color.RED + str([(t[dict['seriesname']]['overview'])]) + color.END)
+    print(generalUtil.color.RED + str(tvItem.summary) + generalUtil.color.END)
     print("b. Back")
     print("q. Quit")
-    switchCreator("bqas", items, "selectTvShow")
+    switchCreator("bqas", pItems, "selectTvShow", tvdbID)
     return
 
-def actors(pItems):
-    dict = pItems[0]
+def actors(pItems, tvdbID):
+    tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
+    peoples = pytvmaze.show_cast(tvItem.maze_id).people
     x = PrettyTable()
-    splitActors = str([(t[dict['seriesname']]['actors'])]).split("|")
-    for i, item in enumerate(splitActors):
-        x.field_names = [i, "actors"]
-        x.add_row([i, color.GREEN + item + color.END])
+    for i, people in enumerate(peoples):
+        x.field_names = [i, "character", "peron"]
+        x.add_row([i, generalUtil.color.GREEN + people.character.name + generalUtil.color.END,generalUtil.color.CYAN + people.name + generalUtil.color.END])
     print(x)
     print("b. Back")
     print("q. Quit")
-    switchCreator("qbos", pItems, "selectTvShow")
+    switchCreator("qbos", pItems, "selectTvShow", tvdbID)
     return
+
+
+def favouriteThis(pItems, tvdbID):
+    tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
+    # pytvmaze.lookup_tvdb(line.split("-")[1])
+    # tvItem = pItems[int(mainChoice)]
+    favFile = open(fileUtil.PATH + "favourites.conf", "a")
+    favFile.write(tvItem.name + "-" + str(tvdbID) + "\n")
+    favFile.close()
+    print(generalUtil.color.GREEN + "'" + tvItem.name + "'" + " Successfully Added to Your Favourite List." +generalUtil.color.END )
+    print("b. Back")
+    print("q. Quit")
+    switchCreator("qbos", pItems, "selectTvShow", tvdbID)
+    return
+
+
+def deleteFavourites(pItems, tvdbID):
+    # tvItem = ""
+    tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
+
+    # open File in ReadOnly-Mode
+    f = open(fileUtil.PATH + "favourites.conf", "r")
+    rLines = f.readlines()
+    f.close()
+
+    # Open File in Write-Mode
+    f = open(fileUtil.PATH + "favourites.conf", "w")
+    for line in rLines:
+        if tvItem.name not in line:
+            f.write(line)
+
+    f.close()
+    print(generalUtil.color.CYAN + "'" + tvItem.name + "'" + " was Successfully removed from your favourite list" + generalUtil.color.END)
+    print("b. Back")
+    print("q. Quit")
+    switchCreator("qbos", pItems, "selectTvShow", tvdbID)
+    return
+
 
 def myFavourites():
     flag = 0
+    lineCount = 0
+    allResults = []
     x = PrettyTable()
-    favFile = open(PATH + "favourites.conf", "r")
-    if os.path.getsize(PATH + "favourites.conf") > 0:
+    favFile = open(fileUtil.PATH + "favourites.conf", "r")
+    if os.path.getsize(fileUtil.PATH + "favourites.conf") > 0:
         for i, line in enumerate(favFile):
-            x.field_names = [i, "seriesname"]
-            x.add_row([i, line])
+            item=pytvmaze.lookup_tvdb(line.split("-")[1])
+            allResults.append(item)
+            deltaDate, nextReleaseDate = tvMazeUtil.tvMazeDate(item)
+            x.field_names = [i, "seriesname", "next Episode", "days to next..."]
+            x.add_row([i, line.split("-")[0], nextReleaseDate, deltaDate])
+            lineCount+=1
         print(x)
         print("b. Back")
         print("q. Quit")
@@ -223,54 +235,20 @@ def myFavourites():
                 quit()
             elif re.match("\d", mainChoice):
                 try:
-                    items = t.search(x._rows[int(mainChoice)][1])
-                    selectTvShow(items)
+                    if int(mainChoice) < lineCount and int(mainChoice) >= 0:
+                        selectTvShow(allResults[int(mainChoice)])
+                    else:
+                        print("You Entered Wrong Number.Please Try Again Later.")
                 except IndexError as e:
                     print("You Entered Wrong Number.Please Try Again Later.")
             else:
                 print("Invalid selection, please try again.\n")
     else:
         favFile.close()
-        print(color.RED + "there is no favourite tv show in the list!" + color.END)
+        print(generalUtil.color.RED + "there is no favourite tv show in the list!" + generalUtil.color.END)
         print("b. Back")
         print("q. Quit")
         switchCreator("qb", "", "main_menu")
-    return
-
-
-def deleteFavourites(pItems):
-    dict = pItems[0]
-
-    f = open(PATH + "favourites.conf", "r")
-    rLines = f.readlines()
-    f.close()
-
-    f = open(PATH + "favourites.conf", "w")
-
-    for line in rLines:
-        if line != dict['seriesname'] + "\n":
-            f.write(line)
-
-    f.close()
-    print(color.CYAN + "'" + dict['seriesname'] + "'" + " was Successfully removed from your favourite list" + color.END)
-    print("b. Back")
-    print("q. Quit")
-    switchCreator("qbos", pItems, "selectTvShow")
-    return
-
-
-def favouriteThis(pItems):
-    dict = pItems[0]
-    favFile = open(PATH + "favourites.conf", "a")
-    favFile.write( dict['seriesname']+ "\n")
-    favFile.close()
-    print(color.GREEN + "'" + dict['seriesname'] + "'" + " Successfully Added to Your Favourite List." +color.END )
-    print("b. Back")
-    print("q. Quit")
-    switchCreator("qbos", pItems, "selectTvShow")
-    # data = {}
-    # data['key'] = 'value'
-    # json_data = json.dumps(data)
     return
 
 
@@ -312,12 +290,14 @@ def switchCreator(*args):
         mainChoice = input(" >>  ")
         if mainChoice == 's' and 's' in args[0]:
             searchTvSeries()
-        if mainChoice == 'm' and 'm' in args[0]:
+        elif mainChoice == 'm' and 'm' in args[0]:
             myFavourites()
-        if mainChoice == 'f' and 'f' in args[0]:
-            favouriteThis(args[1])
-        if mainChoice == 'd' and 'd' in args[0]:
-            deleteFavourites(args[1])
+        elif mainChoice == 'f' and 'f' in args[0]:
+            favouriteThis(args[1], args[3])
+        elif mainChoice == 'd' and 'd' in args[0]:
+            deleteFavourites(args[1], args[3])
+        elif mainChoice == 'u' and 'u' in args[0]:
+            upcoming()
         elif mainChoice == 'w' and 'w' in args[0]:
             whoAmI()
         elif mainChoice == 'h' and 'h' in args[0]:
@@ -327,9 +307,9 @@ def switchCreator(*args):
         elif mainChoice == 'q' and 'q' in args[0]:
             quit()
         elif mainChoice == 'o' and 'o' in args[0]:
-            OverView(args[1])
+            OverView(args[1],args[3])
         elif mainChoice == 'a' and 'a' in args[0]:
-            actors(args[1])
+            actors(args[1], args[3])
         elif mainChoice == 'b' and 'b' in args[0]:
             if args[2] == "main_menu":
                 result = main_menu()
@@ -337,35 +317,28 @@ def switchCreator(*args):
             elif args[2] == "searchTvSeries":
                 searchTvSeries(args[1])
             elif args[2] == "selectTvShow":
-                selectTvShow(args[1])
+                selectTvShow(args[1], args[3])
         else:
             print("Invalid selection, please try again.\n")
 
 
-def functionCaller(methodToRun):
-    result = methodToRun()
-    return result
+def upcoming():
+    # tv_maze = pytvmaze.TVMaze()
+    # tvm = pytvmaze.TVMaze()
+    # show = tvm.get_show(show_name='game of thrones')
+    # print(show)
+    # print(show.name, show.status, show.maze_id)
 
-def getTvObj():
-    choice = input(" >>  ")
-    resp = requests.get(searchUrl + choice)
-    return json.loads(resp.content.decode('utf-8'), object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
 
-def truct():
-    #client-id = 87f242aaa6dd444422926ef424ebd1f86567fee2810914ca98154601b0cfc899
-    #client-secret-id=dbdb42b6a0a7039f652dd24330fc7a8a3e6083062978fb8e755520ed21ad4f70
-    # payload = {'Content-type': 'application/json',
-    #            'trakt-api-key': '87f242aaa6dd444422926ef424ebd1f86567fee2810914ca98154601b0cfc899',
-    #            'trakt-api-version': '2'}
-    # resp = requests.get('https://api.trakt.tv', params=payload)
-    # print(resp.headers)
 
-    # p = lambda: None
-    # p = getTvObj()
-    choice = input(" >>  ")
-    resp = requests.get(searchUrl + choice)
-    p=json.loads(resp.content)
-    print(p[0].score)
+    schedule = pytvmaze.get_scheduleShow("Game of Thrones", 'US', '2017-07-16', )
+    print(schedule)
+    # print(show.schedule)
+    # print(show.next_episode)
+    #
+    # show = tvm.get_show(show_name='daredevil', show_year='2017', show_country='au', show_network='abc')
+    # print(show.premiered)
+    return
 
 
 # =======================
@@ -385,7 +358,7 @@ menu_actions = {
     'm': myFavourites,
     'f': favouriteThis,
     'd': deleteFavourites,
-    # 'x': truct,
+    'u': upcoming,
     'q': quit,
 }
 
