@@ -41,7 +41,7 @@ def main_menu():
     print("m. My Favourites")
     # print("u. Up-Coming Tv Show's")
     print("w. Who Am I?")
-    print("h. Help")
+    print("h. Help" + " (v.1.2)")
     print("\nq. Quit")
     switchCreator("smuwhq","","")
     return
@@ -50,6 +50,8 @@ def main_menu():
 def searchTvSeries(pItems=None):
     items = ""
     flag = 0
+    # pytvmaze.get_schedule('US',)
+    schedule = pytvmaze.get_full_schedule()
     try:
         if pItems is None:
             os.system('clear')
