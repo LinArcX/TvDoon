@@ -42,9 +42,8 @@ def main_menu():
     # print("u. Up-Coming Tv Show's")
     print("w. Who Am I?")
     print("h. Help")
-    print("c. Clear Screen")
     print("\nq. Quit")
-    switchCreator("smuwhcq","","")
+    switchCreator("smuwhq","","")
     return
 
 
@@ -88,7 +87,7 @@ def searchTvSeries(pItems=None):
 
 
 def selectTvShow(pItems, tvdbID=None):
-    originalParams = "soabqfd"
+    originalParams = "soazcbqfd"
     finalParams = ""
     try:
         tvItem = ""
@@ -139,7 +138,8 @@ def selectTvShow(pItems, tvdbID=None):
         print("s. Search Another Tv Show")
         print("o. OverView")
         print("a. Actors")
-        print("e. Episodes")
+        print("z. Seasons/Episodes")
+        print("c. Crews")
     except:
         print("there is no enough Information")
         print("s. Search Another Tv Show")
@@ -159,22 +159,93 @@ def OverView(pItems, tvdbID):
     print(generalUtil.color.RED + str(tvItem.summary) + generalUtil.color.END)
     print("b. Back")
     print("q. Quit")
-    switchCreator("bqas", pItems, "selectTvShow", tvdbID)
+    switchCreator("bqacs", pItems, "selectTvShow", tvdbID)
     return
 
 def actors(pItems, tvdbID):
-    tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
-    peoples = pytvmaze.show_cast(tvItem.maze_id).people
-    x = PrettyTable()
-    for i, people in enumerate(peoples):
-        x.field_names = [i, "character", "peron"]
-        x.add_row([i, generalUtil.color.GREEN + people.character.name + generalUtil.color.END,generalUtil.color.CYAN + people.name + generalUtil.color.END])
-    print(x)
+    try:
+        tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
+        peoples = pytvmaze.show_cast(tvItem.maze_id).people
+        x = PrettyTable()
+        for i, people in enumerate(peoples):
+            x.field_names = [i, "Character", "Person"]
+            x.add_row([i, generalUtil.color.GREEN + people.character.name + generalUtil.color.END,generalUtil.color.CYAN + people.name + generalUtil.color.END])
+        print(x)
+    except Exception as e:
+        print("Sorry, there is no information about actors!")
     print("b. Back")
     print("q. Quit")
-    switchCreator("qbos", pItems, "selectTvShow", tvdbID)
+    switchCreator("qbocs", pItems, "selectTvShow", tvdbID)
     return
 
+def seasons(pItems, tvdbID):
+    flag = 0
+    seasons = 0
+    try:
+        tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
+        seasons = pytvmaze.show_seasons(tvItem.maze_id)
+        x = PrettyTable()
+        for i, season in enumerate(seasons):
+            x.field_names = ["Seasons"]
+            x.add_row([i+1])
+        print(x)
+        print(generalUtil.color.CYAN + "for see episodes list, enter 'row Number' and hit ENTER.otherwise use below Capabilities." + generalUtil.color.END)
+    except Exception as e:
+        print("Sorry, there is no information about seasons!")
+    print("b. Back")
+    print("q. Quit")
+
+    while flag == 0:
+        mainChoice = input(" >>  ")
+        if mainChoice == 'b':
+            selectTvShow(pItems, tvdbID)
+        elif mainChoice == 'q':
+            quit()
+        elif re.match('\d',mainChoice):
+            try:
+                if int(mainChoice)<=len(seasons) and int(mainChoice)>0:
+                    episodes(pItems, tvdbID, mainChoice)
+                else:
+                    print("You Entered Wrong Number.Please Try Again Later.")
+            except IndexError as e:
+                print("You Entered Wrong Number.Please Try Again Later.")
+        else:
+            print("Invalid selection, please try again.\n")
+
+    # switchCreator("qbos", pItems, "selectTvShow", tvdbID)
+    return
+
+def episodes(pItems, tvdbID, seasonNum):
+    try:
+        tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
+        x = PrettyTable()
+        for i, episode in enumerate(tvItem.episodes):
+            if episode.season_number == int(seasonNum):
+                x.field_names = ["Seasons/Episodes", "Title"]
+                x.add_row([generalUtil.color.CYAN + seasonNum + "/" + str(episode.episode_number) + generalUtil.color.END, episode.title])
+        print(x)
+    except Exception as e:
+        print("Sorry, there is no information about episodes!")
+    print("b. Back")
+    print("q. Quit")
+    switchCreator("qb", pItems, "seasons", tvdbID)
+    return
+
+def crews(pItems, tvdbID):
+    try:
+        tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
+        crews = pytvmaze.get_show_crew(tvItem.maze_id)
+        x = PrettyTable()
+        for i, people in enumerate(crews):
+            x.field_names = [i, "Person", "Role"]
+            x.add_row([i, generalUtil.color.GREEN + people.person.name + generalUtil.color.END,generalUtil.color.CYAN + people.type + generalUtil.color.END])
+        print(x)
+    except Exception as e:
+        print("Sorry, there is no information about crews!")
+    print("b. Back")
+    print("q. Quit")
+    switchCreator("qboas", pItems, "selectTvShow", tvdbID)
+    return
 
 def favouriteThis(pItems, tvdbID):
     tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
@@ -268,13 +339,6 @@ def help():
     switchCreator("qb", "", "main_menu")
     return
 
-def clear():
-    os.system('clear')
-    print("b. Back")
-    print("q. Quit")
-    switchCreator("qb", "", "main_menu")
-    return
-
 def quit():
     sys.exit()
 
@@ -303,14 +367,18 @@ def switchCreator(*args):
             whoAmI()
         elif mainChoice == 'h' and 'h' in args[0]:
             help()
-        elif mainChoice == 'c' and 'c' in args[0]:
-            clear()
         elif mainChoice == 'q' and 'q' in args[0]:
             quit()
         elif mainChoice == 'o' and 'o' in args[0]:
             OverView(args[1],args[3])
         elif mainChoice == 'a' and 'a' in args[0]:
             actors(args[1], args[3])
+        elif mainChoice == 'z' and 'z' in args[0]:
+            seasons(args[1], args[3])
+        elif mainChoice == 'e' and 'e' in args[0]:
+            episodes(args[1], args[3])
+        elif mainChoice == 'c' and 'c' in args[0]:
+            crews(args[1], args[3])
         elif mainChoice == 'b' and 'b' in args[0]:
             if args[2] == "main_menu":
                 result = main_menu()
@@ -319,6 +387,8 @@ def switchCreator(*args):
                 searchTvSeries(args[1])
             elif args[2] == "selectTvShow":
                 selectTvShow(args[1], args[3])
+            elif args[2] == "seasons":
+                seasons(args[1], args[3])
         else:
             print("Invalid selection, please try again.\n")
 
@@ -352,10 +422,12 @@ menu_actions = {
     's': searchTvSeries,
     'w': whoAmI,
     'h': help,
-    'c': clear,
     't': selectTvShow,
     'o': OverView,
     'a': actors,
+    'z': seasons,
+    'e': episodes,
+    'c': crews,
     'm': myFavourites,
     'f': favouriteThis,
     'd': deleteFavourites,
