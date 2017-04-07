@@ -26,11 +26,9 @@
 
 .idea/
 
-!tvdoon/
-tvdoon/_tvdoon.py
-tvdoon/__tvdoon
-tvdoon.egg-info/
-dist/
-utility/__pycache__/
 .eggs/
+dist/
+garbage/
 phantomjs/
+tvdoon.egg-info/
+utility/__pycache__/

@@ -13,33 +13,42 @@
 # second api:       :https://www.episodate.com/api
 # =======================================================================
 
-# Import the modules needed to run the script.
-import sys
+# Import the modules needed to run TvDo0n.
 import os
 import pwd
+import queue
 import re
+import sys
+from datetime import datetime
+
 import pytvmaze
-
-from utility import tvMazeUtil
-from utility import fileUtil
-from utility import generalUtil
-
 from prettytable import PrettyTable
 from pyfiglet import figlet_format
+import argparse
+
+from threads import threadDotCount
+from threads import threadSchedule
+
+from utility import colors
+from utility import fileUtil
+from utility import tvMazeUtil
+from utility import constants
+
 
 # =======================
 #     MENUS FUNCTIONS
 # =======================
 
+
 def main_menu():
     os.system('clear')
     fileUtil.checkConfExist()
     username = pwd.getpwuid(os.getuid()).pw_name
-    print(generalUtil.color.BOLD + figlet_format('TvDo0n', font='starwars') + generalUtil.color.END)
+    print(colors.BOLD + figlet_format('TvDo0n', font='starwars') + colors.END)
     print("Welcome " + username + ", Please Choose The Items:")
     print("s. Search Tv Series")
     print("m. My Favourites")
-    # print("u. Up-Coming Tv Show's")
+    print("u. Up-Coming Tv Show's")
     print("w. Who Am I?")
     print("h. Help" + " (v.1.2)")
     print("\nq. Quit")
@@ -49,9 +58,6 @@ def main_menu():
 
 def searchTvSeries(pItems=None):
     items = ""
-    flag = 0
-    # pytvmaze.get_schedule('US',)
-    schedule = pytvmaze.get_full_schedule()
     try:
         if pItems is None:
             os.system('clear')
@@ -64,32 +70,18 @@ def searchTvSeries(pItems=None):
             x.field_names = [i, "seriesname"]
             x.add_row([i, item.name])
         print(x)
-        print(generalUtil.color.CYAN + "for see more details, enter 'row Number' and hit ENTER.otherwise use below Capabilities." + generalUtil.color.END)
+        print(
+            colors.CYAN + "to view more details, enter 'row Number' and hit ENTER.otherwise use below Capabilities." + colors.END)
     except Exception:
         print("There Is No Matching Tv Show")
     print("b. Back")
     print("q. Quit")
-    while flag == 0:
-        mainChoice = input(" >>  ")
-        if mainChoice == 'b':
-            main_menu()
-        elif mainChoice == 'q':
-            quit()
-        elif re.match('\d',mainChoice):
-            try:
-                if int(mainChoice)<=len(items) and int(mainChoice)>=0:
-                    selectTvShow(items, items[int(mainChoice)].externals['thetvdb'])
-                else:
-                    print("You Entered Wrong Number.Please Try Again Later.")
-            except IndexError as e:
-                print("You Entered Wrong Number.Please Try Again Later.")
-        else:
-            print("Invalid selection, please try again.\n")
+    itemChooser(len(items), searchTvSeries, selectTvShow, items)
     return
 
 
 def selectTvShow(pItems, tvdbID=None):
-    originalParams = "soazcbqfd"
+    originalParams = "soazcibqfd"
     finalParams = ""
     try:
         tvItem = ""
@@ -109,8 +101,6 @@ def selectTvShow(pItems, tvdbID=None):
             for item in tvItem.genres:
                 finalGenres += str(item) + " | "
             x.add_column("Genres", [finalGenres.rsplit('|',1)[0]])
-            x.add_column("Network", [tvItem.network.name])
-            x.add_column("RunTime", [tvItem.runtime])
             x.add_column("Status", [tvItem.status])
             x.add_column("Premiered", [tvItem.premiered])
             x.add_column("Final Aired", [tvItem.previous_episode.airdate])
@@ -130,7 +120,8 @@ def selectTvShow(pItems, tvdbID=None):
                 favExists = True
         favFile.close()
         if favExists:
-            print(generalUtil.color.BOLD + generalUtil.color.CYAN + "This Is your Favourite Serie." + generalUtil.color.END)
+            print(
+                colors.BOLD + colors.CYAN + "This Is your Favourite Serie." + colors.END)
             print("d. Delete From Favourites")
             finalParams = originalParams.replace("f", "")
         else:
@@ -142,6 +133,7 @@ def selectTvShow(pItems, tvdbID=None):
         print("a. Actors")
         print("z. Seasons/Episodes")
         print("c. Crews")
+        print("i. More Info")
     except:
         print("there is no enough Information")
         print("s. Search Another Tv Show")
@@ -158,10 +150,10 @@ def selectTvShow(pItems, tvdbID=None):
 def OverView(pItems, tvdbID):
     tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
     print("overview: \n")
-    print(generalUtil.color.RED + str(tvItem.summary) + generalUtil.color.END)
+    print(colors.RED + str(tvItem.summary) + colors.END)
     print("b. Back")
     print("q. Quit")
-    switchCreator("bqacs", pItems, "selectTvShow", tvdbID)
+    switchCreator("bqacizs", pItems, "selectTvShow", tvdbID)
     return
 
 def actors(pItems, tvdbID):
@@ -171,17 +163,17 @@ def actors(pItems, tvdbID):
         x = PrettyTable()
         for i, people in enumerate(peoples):
             x.field_names = [i, "Character", "Person"]
-            x.add_row([i, generalUtil.color.GREEN + people.character.name + generalUtil.color.END,generalUtil.color.CYAN + people.name + generalUtil.color.END])
+            x.add_row([i, colors.GREEN + people.character.name + colors.END,
+                       colors.CYAN + people.name + colors.END])
         print(x)
     except Exception as e:
         print("Sorry, there is no information about actors!")
     print("b. Back")
     print("q. Quit")
-    switchCreator("qbocs", pItems, "selectTvShow", tvdbID)
+    switchCreator("qbocsiz", pItems, "selectTvShow", tvdbID)
     return
 
 def seasons(pItems, tvdbID):
-    flag = 0
     seasons = 0
     try:
         tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
@@ -191,31 +183,14 @@ def seasons(pItems, tvdbID):
             x.field_names = ["Seasons"]
             x.add_row([i+1])
         print(x)
-        print(generalUtil.color.CYAN + "for see episodes list, enter 'row Number' and hit ENTER.otherwise use below Capabilities." + generalUtil.color.END)
+        print(colors.CYAN + "to view the list of episodes, enter 'row Number' and hit ENTER.otherwise use below Capabilities." + colors.END)
     except Exception as e:
         print("Sorry, there is no information about seasons!")
     print("b. Back")
     print("q. Quit")
-
-    while flag == 0:
-        mainChoice = input(" >>  ")
-        if mainChoice == 'b':
-            selectTvShow(pItems, tvdbID)
-        elif mainChoice == 'q':
-            quit()
-        elif re.match('\d',mainChoice):
-            try:
-                if int(mainChoice)<=len(seasons) and int(mainChoice)>0:
-                    episodes(pItems, tvdbID, mainChoice)
-                else:
-                    print("You Entered Wrong Number.Please Try Again Later.")
-            except IndexError as e:
-                print("You Entered Wrong Number.Please Try Again Later.")
-        else:
-            print("Invalid selection, please try again.\n")
-
-    # switchCreator("qbos", pItems, "selectTvShow", tvdbID)
+    itemChooser(len(seasons)+1, seasons, episodes, pItems, tvdbID)
     return
+
 
 def episodes(pItems, tvdbID, seasonNum):
     try:
@@ -224,7 +199,7 @@ def episodes(pItems, tvdbID, seasonNum):
         for i, episode in enumerate(tvItem.episodes):
             if episode.season_number == int(seasonNum):
                 x.field_names = ["Seasons/Episodes", "Title"]
-                x.add_row([generalUtil.color.CYAN + seasonNum + "/" + str(episode.episode_number) + generalUtil.color.END, episode.title])
+                x.add_row([colors.CYAN + seasonNum + "/" + str(episode.episode_number) + colors.END, episode.title])
         print(x)
     except Exception as e:
         print("Sorry, there is no information about episodes!")
@@ -240,7 +215,8 @@ def crews(pItems, tvdbID):
         x = PrettyTable()
         for i, people in enumerate(crews):
             x.field_names = [i, "Person", "Role"]
-            x.add_row([i, generalUtil.color.GREEN + people.person.name + generalUtil.color.END,generalUtil.color.CYAN + people.type + generalUtil.color.END])
+            x.add_row([i, colors.GREEN + people.person.name + colors.END,
+                       colors.CYAN + people.type + colors.END])
         print(x)
     except Exception as e:
         print("Sorry, there is no information about crews!")
@@ -249,12 +225,36 @@ def crews(pItems, tvdbID):
     switchCreator("qboas", pItems, "selectTvShow", tvdbID)
     return
 
+
+def moreInfo(pItems, tvdbID):
+    schedule = ""
+    try:
+        tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
+        x = PrettyTable()
+        x.add_column("Network", [tvItem.network.name])
+        x.add_column("Country", [tvItem.network.country])
+        for item in tvItem.schedule['days']:
+            schedule += str(item) + " | "
+        x.add_column("Schedule Days", [schedule.rsplit('|', 1)[0]])
+        x.add_column("Schedule Time", [tvItem.schedule['time']])
+        x.add_column("RunTime", [tvItem.runtime])
+        x.add_column("Score", [tvItem.score])
+        print(x)
+    except Exception as e:
+        print("Sorry, there is no information about crews!")
+    print("b. Back")
+    print("q. Quit")
+    switchCreator("qboas", pItems, "selectTvShow", tvdbID)
+    return
+
+
 def favouriteThis(pItems, tvdbID):
     tvItem = tvMazeUtil.extractTV(tvdbID, pItems)
     favFile = open(fileUtil.PATH + "favourites.conf", "a")
     favFile.write(tvItem.name + "-" + str(tvdbID) + "\n")
     favFile.close()
-    print(generalUtil.color.GREEN + "'" + tvItem.name + "'" + " Successfully Added to Your Favourite List." +generalUtil.color.END )
+    print(
+        colors.GREEN + "'" + tvItem.name + "'" + " Successfully Added to Your Favourite List." + colors.END)
     print("b. Back")
     print("q. Quit")
     switchCreator("qbos", pItems, "selectTvShow", tvdbID)
@@ -276,7 +276,8 @@ def deleteFavourites(pItems, tvdbID):
             f.write(line)
 
     f.close()
-    print(generalUtil.color.CYAN + "'" + tvItem.name + "'" + " was Successfully removed from your favourite list" + generalUtil.color.END)
+    print(
+        colors.CYAN + "'" + tvItem.name + "'" + " was Successfully removed from your favourite list" + colors.END)
     print("b. Back")
     print("q. Quit")
     switchCreator("qbos", pItems, "selectTvShow", tvdbID)
@@ -284,7 +285,6 @@ def deleteFavourites(pItems, tvdbID):
 
 
 def myFavourites():
-    flag = 0
     lineCount = 0
     allResults = []
     x = PrettyTable()
@@ -301,30 +301,72 @@ def myFavourites():
         print("b. Back")
         print("q. Quit")
         favFile.close()
-        while flag == 0:
-            mainChoice = input(" >>  ")
-            if mainChoice == 'b':
-                main_menu()
-            elif mainChoice == 'q':
-                quit()
-            elif re.match("\d", mainChoice):
-                try:
-                    if int(mainChoice) < lineCount and int(mainChoice) >= 0:
-                        selectTvShow(allResults[int(mainChoice)])
-                    else:
-                        print("You Entered Wrong Number.Please Try Again Later.")
-                except IndexError as e:
-                    print("You Entered Wrong Number.Please Try Again Later.")
-            else:
-                print("Invalid selection, please try again.\n")
+        itemChooser(lineCount, myFavourites, selectTvShow, allResults)
     else:
         favFile.close()
-        print(generalUtil.color.RED + "there is no favourite tv show in the list!" + generalUtil.color.END)
+        print(colors.RED + "there is no favourite tv show in the list!" + colors.END)
         print("b. Back")
         print("q. Quit")
         switchCreator("qb", "", "main_menu")
     return
 
+
+def upcoming():
+    returnQueue = queue.Queue()
+    exceptDay = input("Enter Except Day(i.e: " + str(datetime.now().date()) + "):")
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('-t', '--today', help='show episode lists of today.', action='store_true', default=True)
+    # parser.add_argument('-u', '--until', help='show episode lists Until the day.', action='store_true', default=True)
+    # parser.add_argument('-j', '--just', help='show episode lists, just for specified Day.', action='store_true', default=True)
+
+    # args = parser.parse_args()
+    # IgnoreCase = args.ignoreCase
+    try:
+        exceptDay = datetime.strptime(exceptDay, '%Y-%m-%d').date()
+    except:
+        print(colors.RED + "Date Format Is Incorrect.Enter Date like:2012-02-18" + colors.END)
+        upcoming()
+    currentDay = datetime.now().date()
+
+    if exceptDay >= currentDay:
+        # Create new threads
+        thread1 = threadDotCount.threadDotCount(1, "Thread-1", True)
+        thread2 = threadSchedule.threadSchedule(2, "Thread-2", returnQueue, currentDay,True, 'Us', exceptDay)
+
+        # Start new Threads
+        thread1.start()
+        thread2.start()
+
+        # Kill all threads
+        thread1.join()
+        thread2.join()
+        constants.wholeCounter = True
+
+        # Get Response As Dictionary
+        try:
+            responseDict = returnQueue.get()
+            print(colors.CYAN + "to view the list of episodes, enter 'row Number' and then hit ENTER.otherwise use below Capabilities." + colors.END)
+            print("b. Back")
+            print("q. Quit")
+            itemChooser(len(responseDict), upcoming, upcomingDetails, responseDict)
+        except:
+            pass
+    else:
+        print(colors.RED + "You Enter A Decayed Time :( Try Again" + colors.END)
+        upcoming()
+    return
+
+def upcomingDetails(scheduleDay):
+    x = PrettyTable()
+    for i, item in enumerate(scheduleDay):
+        x.field_names = [i, "TvShow", "Season.No.", "Episode.No.", "AirStamp", "RunTime"]
+        x.add_row([i, item.show.name, item.season_number, item.episode_number, item.airstamp, item.runtime])
+    print(x)
+    print(colors.CYAN + "to view more details, enter 'row Number' and then hit ENTER.otherwise use below Capabilities." + colors.END)
+    print("b. Back")
+    print("q. Quit")
+    itemChooser(len(scheduleDay)+1, upcomingDetails, selectTvShow, scheduleDay)
+    return
 
 def whoAmI():
     print("i am nobody, please visit us on : http://www.bbs.archusers.ir!\n")
@@ -334,6 +376,8 @@ def whoAmI():
     return
 
 def help():
+    parser = argparse.ArgumentParser()
+    parser.parse_args()
     print("this program use english letters for get into other menu(sub-menu).\nfor example, if you see: 'b. Back', you must enter b letter, "+
           "and hit enter from keyboard.")
     print("b. Back")
@@ -343,6 +387,43 @@ def help():
 
 def quit():
     sys.exit()
+
+
+def itemChooser(condition, srcFunction, destFunction, *args):
+    """
+    choose the item and go inside it with parameters.
+    :param condition:
+    :param srcFunction:
+    :param destFunction:
+    :param args:
+    """
+    flag = 0
+    while flag == 0:
+        mainChoice = input(" >>  ")
+        if mainChoice == 'b':
+            main_menu()
+        elif mainChoice == 'q':
+            quit()
+        elif re.match("\d", mainChoice):
+            try:
+                if int(mainChoice) < condition and int(mainChoice) >= 0:
+                    if destFunction == episodes:
+                        destFunction(args[0], args[1], mainChoice)
+                    elif destFunction == upcomingDetails:
+                        destFunction(args[0][int(mainChoice)])
+                    elif destFunction == selectTvShow:
+                        if srcFunction == searchTvSeries:
+                            destFunction(args[0], args[0][int(mainChoice)].externals['thetvdb'])
+                        elif srcFunction == myFavourites:
+                            destFunction(args[0][int(mainChoice)])
+                        elif srcFunction == upcomingDetails:
+                            destFunction(args[0][int(mainChoice)].show)
+                else:
+                    print("You Entered Wrong Number.Please Try Again Later.")
+            except IndexError as e:
+                print("You Entered Wrong Number.Please Try Again Later.")
+        else:
+            print("Invalid selection, please try again.\n")
 
 
 def switchCreator(*args):
@@ -363,8 +444,8 @@ def switchCreator(*args):
             favouriteThis(args[1], args[3])
         elif mainChoice == 'd' and 'd' in args[0]:
             deleteFavourites(args[1], args[3])
-        # elif mainChoice == 'u' and 'u' in args[0]:
-        #     upcoming()
+        elif mainChoice == 'u' and 'u' in args[0]:
+            upcoming()
         elif mainChoice == 'w' and 'w' in args[0]:
             whoAmI()
         elif mainChoice == 'h' and 'h' in args[0]:
@@ -381,6 +462,8 @@ def switchCreator(*args):
             episodes(args[1], args[3])
         elif mainChoice == 'c' and 'c' in args[0]:
             crews(args[1], args[3])
+        elif mainChoice == 'i' and 'i' in args[0]:
+            moreInfo(args[1], args[3])
         elif mainChoice == 'b' and 'b' in args[0]:
             if args[2] == "main_menu":
                 result = main_menu()
@@ -393,25 +476,6 @@ def switchCreator(*args):
                 seasons(args[1], args[3])
         else:
             print("Invalid selection, please try again.\n")
-
-
-def upcoming():
-    # tv_maze = pytvmaze.TVMaze()
-    # tvm = pytvmaze.TVMaze()
-    # show = tvm.get_show(show_name='game of thrones')
-    # print(show)
-    # print(show.name, show.status, show.maze_id)
-
-
-
-    schedule = pytvmaze.get_scheduleShow("Game of Thrones", 'US', '2017-07-16', )
-    print(schedule)
-    # print(show.schedule)
-    # print(show.next_episode)
-    #
-    # show = tvm.get_show(show_name='daredevil', show_year='2017', show_country='au', show_network='abc')
-    # print(show.premiered)
-    return
 
 
 # =======================
@@ -430,6 +494,7 @@ menu_actions = {
     'z': seasons,
     'e': episodes,
     'c': crews,
+    'i': moreInfo,
     'm': myFavourites,
     'f': favouriteThis,
     'd': deleteFavourites,
@@ -444,5 +509,7 @@ menu_actions = {
 
 # Main Program
 if __name__ == "__main__":
-    # Launch main menu
-    main_menu()
+    try:
+        main_menu()
+    except (KeyboardInterrupt, SystemExit):
+        print("You have successfully signed out!")
