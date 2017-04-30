@@ -21,7 +21,9 @@ Show Information About Tv Show's, Ratings And So Many Cool Fatures! **tvdO0n**
 ## Usage
 1. type in your terminal:
   `tvdoon`
-2. have Fun!
+2. `tvdoon` [options]
+  options -f for favourites shortcut
+3. have Fun!
 
 ## Contributing
 1. Fork it!
