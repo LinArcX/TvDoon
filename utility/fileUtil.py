@@ -2,7 +2,10 @@ import os
 from os.path import expanduser
 
 # Global Section Variables
-PATH = expanduser("~") + "/.config/tvdoon/"
+try:
+    PATH = os.environ["XDG_CONFIG_HOME"] + "/tvdoon/"
+except KeyError:
+    PATH = expanduser("~") + "/.config/tvdoon/"
 
 def checkConfExist():
     # create conf directory
