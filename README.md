@@ -13,7 +13,7 @@ Show Information About Tv Show's, Ratings And So Many Cool Fatures! **tvdO0n**
 6. And Finally See The Schedule Box.(Enter a Desired Time And See Episode List.)
 
 ## Installation
-1. if you are an arch user,it reside in AUR repo.just type: 
+1. if you are an arch user,it reside in AUR repo.just type:
     `packer -S tvdoon-git`
 2. if you have windows, mac, ubuntu, suse, fedora or any other linux distro; make sure that python and pip3 have been installed on your machine.then:
     `sudo pip3 install tvdoon`
@@ -33,13 +33,6 @@ Show Information About Tv Show's, Ratings And So Many Cool Fatures! **tvdO0n**
 5. Submit a pull request :D
 
 
-## VisitUs
-[bbs.archusers.ir](http://bbs.archusers.ir/index.php)
-## Credits
-LinArcX
-Blog:[stack.blog.ir](http://stack.blog.ir/)
-
 E-Mail:linarcx@gmail.com
 ## License
 GNU GENERAL PUBLIC LICENSE(Version 3, 29 June 2007)
-
