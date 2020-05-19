@@ -25,14 +25,9 @@ Show Information About Tv Show's, Ratings And So Many Cool Fatures! **tvdO0n**
   options -f for favourites shortcut
 3. have Fun!
 
-## Contributing
-1. Fork it!
-2. Create your feature branch: `git checkout -b my-new-feature`
-3. Commit your changes: `git commit -am 'Add some feature'`
-4. Push to the branch: `git push origin my-new-feature`
-5. Submit a pull request :D
+## Donate
+- Monero: `48VdRG9BNePEcrUr6Vx6sJeVz6EefGq5e2F5S9YV2eJtd5uAwjJ7Afn6YeVTWsw6XGS6mXueLywEea3fBPztUbre2Lhia7e`
+<img src="donate/monero.png" align="center" />
 
-
-E-Mail:linarcx@gmail.com
 ## License
 GNU GENERAL PUBLIC LICENSE(Version 3, 29 June 2007)
