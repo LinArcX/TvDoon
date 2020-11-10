@@ -291,11 +291,12 @@ def myFavourites():
     favFile = open(fileUtil.PATH + "favourites.conf", "r")
     if os.path.getsize(fileUtil.PATH + "favourites.conf") > 0:
         for i, line in enumerate(favFile):
-            item=pytvmaze.lookup_tvdb(line.split("-")[1])
+            item=pytvmaze.lookup_tvdb(line.split("-")[-1])
+            seriesname = '-'.join(line.split("-")[:-1])
             allResults.append(item)
             deltaDate, nextReleaseDate = tvMazeUtil.tvMazeDate(item)
             x.field_names = [i, "seriesname", "next Episode", "days to next..."]
-            x.add_row([i, line.split("-")[0], nextReleaseDate, deltaDate])
+            x.add_row([i, seriesname, nextReleaseDate, deltaDate])
             lineCount+=1
         print(x)
         print("b. Back")
